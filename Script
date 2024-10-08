@@ -1,0 +1,203 @@
+local player = game.Players.LocalPlayer
+
+local Tab = Window:MakeTab({
+	Name = "Shadow Hub",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+OrionLib:MakeNotification({
+	Name = "Aviso",
+	Content = "Scrit executado!",
+	Image = "rbxassetid://4483345998",
+	Time = 5
+})
+
+local Section = Tab:AddSection({
+	Name = "Player"
+})
+
+local Section = Tab:AddSection({
+	Name = "Pulo, Velocidade"
+})
+
+Tab:AddSlider({
+	Name = "Velocidade",
+	Min = 15,
+	Max = 200,
+	Default = 5,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 1,
+	ValueName = "Velocidade",
+	Callback = function()
+		print(Value)
+	end    
+})
+
+local Section = Tab:AddSection({
+	Name = "Mira"
+})
+
+local Section = Tab:AddSection({
+	Name = "ESP, Tracer, Aimbot"
+})
+
+Tab:AddButton({
+	Name = "ESP",
+	Callback = function(local Players = game:GetService("Players")
+		local LocalPlayer = Players.LocalPlayer
+		
+		-- Define a cor e a transparência para tornar os jogadores visíveis
+		local function makePlayersVisible()
+			for _, player in pairs(Players:GetPlayers()) do
+				if player ~= LocalPlayer and player.Character then
+					for _, part in pairs(player.Character:GetChildren()) do
+						if part:IsA("BasePart") then
+							part.Transparency = 0.5 -- Ajuste a transparência conforme necessário
+							part.BrickColor = BrickColor.new("Bright red") -- Ajuste a cor conforme necessário
+						end
+					end
+				end
+			end
+		end
+		
+		-- Restaura as propriedades originais dos jogadores
+		local function restorePlayers()
+			for _, player in pairs(Players:GetPlayers()) do
+				if player ~= LocalPlayer and player.Character then
+					for _, part in pairs(player.Character:GetChildren()) do
+						if part:IsA("BasePart") then
+							part.Transparency = 0 -- Restaura a transparência
+							part.BrickColor = BrickColor.new("Medium stone grey") -- Restaura a cor original
+						end
+					end
+				end
+			end
+		end
+		
+		-- Escuta eventos de jogador entrando e saindo
+		Players.PlayerAdded:Connect(function(player)
+			player.CharacterAdded:Connect(function(character)
+				makePlayersVisible()
+			end)
+		end)
+		
+		Players.PlayerRemoving:Connect(function(player)
+			restorePlayers()
+		end)
+		
+		-- Chama a função inicial para fazer os jogadores visíveis no início
+		makePlayersVisible()
+		)
+      		print("")
+  	end    
+})
+
+Tab:AddButton({
+	Name = "Tracer",
+	Callback = function(local Players = game:GetService("Players")
+		local LocalPlayer = Players.LocalPlayer
+		local lineThickness = 0.1 -- Espessura da linha
+		local lineColor = Color3.fromRGB(255, 0, 0) -- Cor da linha
+		
+		-- Função para criar uma linha entre o jogador local e outro jogador
+		local function drawLine(startPos, endPos)
+			local line = Instance.new("Part")
+			line.Anchored = true
+			line.CanCollide = false
+			line.Material = Enum.Material.Neon
+			line.BrickColor = BrickColor.new(lineColor)
+			
+			-- Calcular a posição e o tamanho da linha
+			local midpoint = (startPos + endPos) / 2
+			local distance = (startPos - endPos).Magnitude
+			
+			line.Size = Vector3.new(lineThickness, lineThickness, distance)
+			line.CFrame = CFrame.new(midpoint, endPos) * CFrame.new(0, 0, -distance / 2)
+			line.Parent = workspace
+			
+			-- Destroi a linha após um tempo
+			game:GetService("Debris"):AddItem(line, 5) -- A linha será destruída após 5 segundos
+		end
+		
+		-- Atualiza as linhas entre o jogador local e os outros jogadores
+		local function updateLines()
+			while true do
+				wait(0.5) -- Atualiza a cada 0.5 segundos
+		
+				-- Remove linhas anteriores
+				for _, part in pairs(workspace:GetChildren()) do
+					if part:IsA("Part") and part.Material == Enum.Material.Neon and part.BrickColor == BrickColor.new(lineColor) then
+						part:Destroy()
+					end
+				end
+		
+				-- Desenha linhas para todos os jogadores
+				for _, player in pairs(Players:GetPlayers()) do
+					if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+						local startPos = LocalPlayer.Character.HumanoidRootPart.Position
+						local endPos = player.Character.HumanoidRootPart.Position
+						drawLine(startPos, endPos)
+					end
+				end
+			end
+		end
+		
+		-- Chama a função para atualizar as linhas
+		updateLines()
+		)
+      		print("")
+  	end    
+})
+
+Tab:AddButton({
+	Name = "Aimbot",
+	Callback = function(local Players = game:GetService("Players")
+		local LocalPlayer = Players.LocalPlayer
+		local Mouse = LocalPlayer:GetMouse()
+		
+		-- Criação da mira
+		local crosshair = Instance.new("Frame")
+		crosshair.Size = UDim2.new(0, 20, 0, 20) -- Tamanho da mira
+		crosshair.BackgroundColor3 = Color3.new(1, 0, 0) -- Cor da mira (vermelha)
+		crosshair.Position = UDim2.new(0.5, -10, 0.5, -10) -- Centraliza na tela
+		crosshair.AnchorPoint = Vector2.new(0.5, 0.5)
+		crosshair.Parent = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("ScreenGui") -- Adiciona à GUI
+		
+		-- Função para criar uma bola na posição do mouse
+		local function createBallAtMouse()
+			local ball = Instance.new("Part")
+			ball.Size = Vector3.new(1, 1, 1) -- Tamanho da bola
+			ball.Shape = Enum.PartType.Ball
+			ball.BrickColor = BrickColor.new("Bright blue") -- Cor da bola
+			ball.Material = Enum.Material.Neon -- Material da bola
+			ball.Anchored = true -- A bola não se move com a física
+			ball.CanCollide = false -- A bola não colide com outros objetos
+		
+			local mouseHit = Mouse.Hit.p -- Posição do mouse no mundo
+			ball.Position = Vector3.new(mouseHit.X, mouseHit.Y + 2, mouseHit.Z) -- Ajusta a posição da bola
+			ball.Parent = workspace
+		
+			-- Destroi a bola após 5 segundos
+			game:GetService("Debris"):AddItem(ball, 5)
+		end
+		
+		-- Função para teleportar a mira na cabeça do jogador
+		local function teleportCrosshairToHead()
+			if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head") then
+				local headPosition = LocalPlayer.Character.Head.Position
+				crosshair.Position = UDim2.new(0, headPosition.X, 0, headPosition.Y - 50) -- Ajusta a posição da mira
+			end
+		end
+		
+		-- Evento para detectar o clique do mouse esquerdo
+		Mouse.Button1Down:Connect(function()
+			teleportCrosshairToHead() -- Teleporta a mira
+			createBallAtMouse() -- Cria a bola no mouse
+		end)
+		)
+      		print("")
+  	end    
+})
+
+OrionLib:Init()
