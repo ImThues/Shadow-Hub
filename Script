@@ -1,5 +1,3 @@
-local player = game.Players.LocalPlayer
-
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 local Tab = Window:MakeTab({
@@ -48,6 +46,8 @@ Tab:AddSlider({
 		  game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
 	end    
 })
+
+
 
 local Section = Tab:AddSection({
 	Name = "Mira"
@@ -213,6 +213,73 @@ Tab:AddButton({
 		)
       		print("")
   	end    
+})
+
+Tab:AddToggle({
+	Name = "Fly (Pressione F)",
+	Default = false,
+	Callback = function(local UserInputService = game:GetService("UserInputService")
+		local Players = game:GetService("Players")
+		local player = Players.LocalPlayer
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoid = character:WaitForChild("Humanoid")
+		local flying = false
+		local speed = 50
+		
+		local function fly()
+			flying = true
+			local bodyVelocity = Instance.new("BodyVelocity")
+			bodyVelocity.Velocity = Vector3.new(0, speed, 0)
+			bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+			bodyVelocity.Parent = character.HumanoidRootPart
+		
+			while flying do
+				local direction = Vector3.new()
+				
+				if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+					direction = direction + workspace.CurrentCamera.CFrame.LookVector
+				end
+				if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+					direction = direction - workspace.CurrentCamera.CFrame.LookVector
+				end
+				if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+					direction = direction - workspace.CurrentCamera.CFrame.RightVector
+				end
+				if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+					direction = direction + workspace.CurrentCamera.CFrame.RightVector
+				end
+				
+				bodyVelocity.Velocity = Vector3.new(direction.X * speed, bodyVelocity.Velocity.Y, direction.Z * speed)
+				wait(0.1)
+			end
+			
+			bodyVelocity:Destroy()
+		end
+		
+		local function toggleFly()
+			if flying then
+				flying = false
+			else
+				fly()
+			end
+		end
+		
+		UserInputService.InputBegan:Connect(function(input, gameProcessed)
+			if not gameProcessed then
+				if input.KeyCode == Enum.KeyCode.F then -- Altera a tecla para ativar/desativar o voo
+					toggleFly()
+				end
+			end
+		end)
+		
+		UserInputService.InputEnded:Connect(function(input, gameProcessed)
+			if input.KeyCode == Enum.KeyCode.F then
+				flying = false
+			end
+		end)
+		)
+		print(Value)
+	end    
 })
 
 OrionLib:Init()
